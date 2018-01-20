@@ -3,11 +3,22 @@
 
 int main()
 {
-	boost::asio::io_service io_service;
-	for (int i = 0; i < 42; ++i)
+	using namespace boost::asio;
+	io_service io_service;
+	ip::tcp::resolver resolver(io_service);
+	ip::tcp::resolver::query query("api.thingspeak.com", "https");
+
+	auto resolve = resolver.resolve(query);
+	decltype(resolve) end;
+	
+	while(resolve != end)
 	{
-		io_service.poll();
-		std::cout << "Hello world!" <<std::endl;
+
+		ip::tcp::endpoint endpoint = *resolve++;
+		std::cout << endpoint << std::endl;
 	}
+
+
 	return 0;
 }
+
