@@ -21,6 +21,12 @@ int main()
 
     std::vector<thing_speak::ThingSpeakChannelStruct> channel_data;
 
+    thing_speak::ThingSpeakChannelStruct data;
+
+    data.field[0] = 15;
+
+
+    channel.UpdateChannelInfo(data);
 
 
     if (!channel.GetChennalData(channel_data, 1))

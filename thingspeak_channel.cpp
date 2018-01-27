@@ -25,22 +25,35 @@ thingspeak_channel::thingspeak_channel(int channel_id, std::string read_key, std
 {
 }
 
-int thingspeak_channel::UpdateChannelInfo(ThingSpeakChannelStruct &data)
+int thingspeak_channel::UpdateChannelInfo(const ThingSpeakChannelStruct &data)
 {
     std::stringstream head;
-    const std::string field1="100";
-
     head << "POST /update.json?";
-    AddDataToUpdateRequest(m_write_key, "api_key", head) << "&";
-    AddDataToUpdateRequest(std::to_string(100), "field1", head) << "HTTP/1.1\n";
-    head << kHostName << "\n";
-    head << "Cache-Control: no-cache\n";
-    head << "Connection: close\n\n";
+    AddDataToUpdateRequest(m_write_key, "api_key", head);
 
+    // add channel fields to request
+    for (int i = 0; i < kMaxChannelSize; ++i)
+    {
+        head << "&";
+        AddDataToUpdateRequest(std::to_string(data.field[i]), "field" + std::to_string(i + 1), head);
+    }
+    head << " HTTP/1.1\n";
+    head << "Host:" << kHostName << "\n";
+    head << "Cache-Control: no-cache\n";
+    head << "Connection: keep-alive\n";
+    head << "Content-Length: 0 \n\n";
+
+    std::cout << head.str();
 
     std::vector<char> answer;
-
     m_http_client.SendMessage(head, answer);
+
+    // print result
+    for (size_t i = 0; i < answer.size(); ++i)
+    {
+        std::cout << answer[i];
+    }
+    std::cout << std::endl;
 
     return 0;
 }
@@ -55,11 +68,7 @@ int thingspeak_channel::GetChennalData(std::vector<ThingSpeakChannelStruct> &las
     AddDataToUpdateRequest(std::to_string(data_count), "results", head) << " HTTP/1.1\n";
     head << "Host:" << kHostName << "\n";
     head << "Connection: keap-alive\n";
-    //head << "X-THINGSPEAKAPIKEY: " << m_read_key << "\n";
-    //head << "Content-Type: application/x-www-form-urlencoded\n";
     head << "Content-Length: 0 \n\n";
-
-    std::cout << head.str() << std::endl;
 
     // send request
     std::vector<char> answer;
