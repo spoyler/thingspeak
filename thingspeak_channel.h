@@ -7,23 +7,37 @@
 
 namespace thing_speak {
 
+struct ThingSpeakChannelStruct
+{
+  int channel_id;
+  float field[8];
+  std::string created_at;
+  int entry_id;
+  float status;
+  float latitude;
+  float longitude;
+  float elevation;
+};
+
 class thingspeak_channel
 {
     static const int MaxChannelSize = 8;
+    const std::string kHostName = "api.thingspeak.com";
 public:
-    thingspeak_channel(std::string read_key, std::string write_key);
+    thingspeak_channel(int channel_id, std::string read_key, std::string write_key);
 
-    int UpdateChannelInfo();
-    int GetChannelInfo();
+    int UpdateChannelInfo(ThingSpeakChannelStruct &last_data);
+    int GetChennalData(std::vector<ThingSpeakChannelStruct> &last_data, int data_count);
 
 private:
 
-    AddDataToUpdateRequest(const std::string &data_to_append, const std::string &data_name,
-                           const std::string &boundary, std::stringstream &data);
-
+    std::stringstream& AddDataToUpdateRequest(const std::string &data_to_append,
+                           const std::string &data_name,
+                           std::stringstream &data);
+private:
+    const int m_channel_id;
     const std::string m_read_key;
     const std::string m_write_key;
-    int m_channel_id;
     float m_field[MaxChannelSize];
     http_client m_http_client;
 };

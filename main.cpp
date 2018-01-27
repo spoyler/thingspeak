@@ -1,43 +1,38 @@
 #include <iostream>
 #include <string>
 #include <random>
+#include <vector>
 
 #include <boost/asio.hpp>
+
+#include "thingspeak_channel.h"
 
 
 
 int main()
 {
-    const std::string host_name = "api.thingspeak.com";
-    const std::string write_key = "QCB8ZKKZEJBK7W6V";
+    const int channel_id = 337028;
+    const std::string read_key = "QCB8ZKKZEJBK7W6V";
     const std::string write_key = "IMONY3UPBVR3AEO2";
 
-        
+    std::cout << read_key << std::endl;
 
-/*
-                std::string boundary ("----");
-                boundary += random_sting();
-                boundary += "\n";
-                boundary += "\n";
-                                
-                std::string data;                
-                
-                data += boundary;                   
-                data += "Content-Disposition: form-data; name=\"api_key\"";
-                data += "\r\n";
-                data += "\r\n";
-                data += write_key; // this is data
-                data += "\r\n";
-                data += boundary;
-                  
-                data += "Content-Disposition: form-data; name=\"field1\"";
-                data += "\r\n";
-                data += "\r\n";
-                data += std::to_string(55); // this is data
-                data += "\r\n";
-                data += boundary;
-                data += "\r\n";
-                data += "\r\n";
-*/
+    thing_speak::thingspeak_channel channel(channel_id, read_key, write_key);
+
+    std::vector<thing_speak::ThingSpeakChannelStruct> channel_data;
+
+
+
+    if (!channel.GetChennalData(channel_data, 1))
+    {
+        if(!channel_data.empty())
+        {
+            std::cout << channel_data[0].created_at << std::endl;
+            std::cout << channel_data[0].entry_id << std::endl;
+        }
+    }
+
+
+
 	return 0;
 }

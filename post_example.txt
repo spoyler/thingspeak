@@ -13,3 +13,38 @@ Content-Disposition: form-data; name="field1"
 
 76
 ------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+GET /channels/337028/feeds.json?api_key=QCB8ZKKZEJBK7W6V&results=2 HTTP/1.1
+Host: api.thingspeak.com
+User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:58.0) Gecko/20100101 Firefox/58.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+Cookie: s_fid=692490703DBA6F97-1DA7160327D3FC6B; _ga=GA1.2.472955133.1516732511; s_cc=true
+Connection: keep-alive
+Upgrade-Insecure-Requests: 1
+If-None-Match: "2e19b2d1b9fab51b45c65e1c92d42ddd"
+
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+Transfer-Encoding: chunked
+Connection: close
+Status: 200 OK
+X-Frame-Options: ALLOWALL
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Methods: GET, POST, PUT, OPTIONS, DELETE, PATCH
+Access-Control-Allow-Headers: origin, content-type, X-Requested-With
+Access-Control-Max-Age: 1800
+ETag: "aa9191c5c8c5878bec6bd9bdea659d88"
+Cache-Control: max-age=0, private, must-revalidate
+X-Request-Id: cd1b93d6-005b-4322-9792-8a31862ee646
+X-Runtime: 0.008266
+X-Powered-By: Phusion Passenger 4.0.57
+Date: Sat, 27 Jan 2018 17:35:16 GMT
+Server: nginx/1.9.3 + Phusion Passenger 4.0.57
+
+161
+{"channel":{"id":337028,"name":"Test","description":"Test","latitude":"0.0","longitude":"0.0","field1":"Field Label 1","created_at":"2017-09-25T18:46:57Z","updated_at":"2018-01-27T16:45:06Z","last_entry_id":33},"feeds":[{"created_at":"2018-01-27T16:40:52Z","entry_id":32,"field1":"99"},{"created_at":"2018-01-27T16:45:06Z","entry_id":33,"field1":"99"}]}
+0
+
+

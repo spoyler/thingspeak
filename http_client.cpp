@@ -1,6 +1,5 @@
 #include "http_client.h"
 
-#include <iostream>
 
 namespace thing_speak {
 
@@ -9,6 +8,7 @@ namespace thing_speak {
 http_client::http_client(std::string host_name_or_ip_addr) :
     m_host_name_or_ip_addr(std::move(host_name_or_ip_addr)),
     m_io_service(),
+    m_socket(m_io_service),
     m_resolver(m_io_service)
 {
 
@@ -16,58 +16,61 @@ http_client::http_client(std::string host_name_or_ip_addr) :
 
 int http_client::Connect()
 {
-    ip::tcp::resolver::query query(m_host_name_or_ip_addr, "http");
-    auto endpoint_iterator = m_resolver.resolve(query);
-    decltype(endpoint_iterator) end_endpoint;
-
-    if (endpoint_iterator != end_endpoint)
-    {
-        std::errc << "Cann't resolve host name" << std::endl;
-        return -1;
-    }
-    ip::tcp::socket socket(m_io_service);
-    socket.open(ip::tcp::v4());
-
+    boost::asio::ip::tcp::resolver::query query(m_host_name_or_ip_addr, "http");
     boost::system::error_code error;
-    m_soket.connect(*endpoint_iterator, error);
+    auto endpoint_iterator = m_resolver.resolve(query,error);
+    decltype(endpoint_iterator) end_endpoint;
 
     if (error)
     {
-        std::error << error.message();
+        std::cerr << error.message();
+        std::cerr << "Cann't resolve host name: " << m_host_name_or_ip_addr << std::endl;
+        return -1;
+    }
+
+    boost::asio::ip::tcp::socket socket(m_io_service);
+    socket.open(boost::asio::ip::tcp::v4());
+
+    m_socket.connect(*endpoint_iterator, error);
+
+    if (error)
+    {
+        std::cerr << error.message();
         return -1;
     }
 
 
-    std::cout << "Connected to " << endpoint_iterator->host_name(); << std::end;
+    std::cout << "Connected to " << endpoint_iterator->host_name() << std::endl;
 
     return 0;
 }
 
-int http_client::SendMessage(std::string message, std::string &result)
+int http_client::SendMessage(const std::stringstream &message, std::vector<char> &answer)
 {
 
-    if (!SendData())
+    if (!SendData(message))
     {
-        ReadAnswer();
+        ReadAnswer(answer);
+        return 0;
     }
-    return 0;
+    return -1;
 }
 
-int SendData()
+int http_client::SendData(const std::stringstream &message)
 {
     if (!Connect())
     {
         boost::system::error_code error;
-        const size_t size = m_soket.write_some(buffer(message.c_str()),
-                                               message.size, error);
+        const size_t size = m_socket.write_some(boost::asio::buffer(message.str().c_str(),
+                                               message.str().size()), error);
 
         if (error)
         {
-            std::error << error.message();
+            std::cerr << error.message();
             return -1;
         }
 
-        std::cout << "Write " << size << " bytes" << tsd::endl;
+        std::cout << "Write " << size << " bytes" << std::endl;
 
         return 0;
     }
@@ -75,26 +78,31 @@ int SendData()
     return -1;
 }
 
-int ReadAnswer()
+
+int http_client::ReadAnswer(std::vector<char> &answer)
 {
-    char buff[2048];
-    boost::system::error_code error;
-    socket.read_some(buffer(buff, 2048), error);
+    const auto data_to_read = m_socket.available();
 
-    if (!error)
+    if (data_to_read)
     {
-        std::cout << "read ok" << std::endl;
-        socket.shutdown(ip::tcp::socket::shutdown_receive);
-        socket.close();
+        answer.resize(data_to_read);
+        boost::system::error_code error;
 
-        std::cout << buff << std::endl;
-        return 0;
+        m_socket.read_some(boost::asio::buffer((answer), answer.size()), error);
 
-    }
-    else
-    {
-        std::cout << error.message() << std::endl;
-        return -1;
+        if (!error)
+        {
+            std::cout << "read ok" << std::endl;
+            m_socket.shutdown(boost::asio::ip::tcp::socket::shutdown_receive);
+            m_socket.close();
+
+            return 0;
+        }
+        else
+        {
+            std::cout << error.message() << std::endl;
+            return -1;
+        }
     }
 
     return 0;

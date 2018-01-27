@@ -1,15 +1,20 @@
 CXX=g++
-CXXFLAGS=-c -Wall -O0 -std=c++11 -ggdb
+CXXFLAGS=-c -Wall -O0 -std=c++11 -g
 LDLIBS=-lboost_system -lpthread	
 
-all: thingspeak 
-debug: thingspeak
+SOURCES=main.cpp thingspeak_channel.cpp http_client.cpp
+OBJECTS=$(SOURCES:.cpp=.o)
 
-thingspeak: main.o
-	$(CXX) main.o -o thingspeak.out $(LDLIBS)
+EXECUTABLE=thingspeak
+all: $(SOURCES) $(EXECUTABLE)
+debug: $(SOURCES) $(EXECUTABLE)
 
-mmain.o: main.cpp
-	$(CXX) $(CXXFLAGS) main.cpp
+
+$(EXECUTABLE):$(OBJECTS)
+	$(CXX) $(OBJECTS) -o $@.out $(LDLIBS)
+
+.cpp.o:
+	$(CXX) $(CXXFLAGS) $< -o $@
 
 clean:
 	rm -rf *.o main
