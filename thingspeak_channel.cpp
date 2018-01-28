@@ -75,11 +75,11 @@ int thingspeak_channel::GetChennalData(std::vector<ThingSpeakChannelStruct> &las
     m_http_client.SendMessage(head, answer);
 
     // print result
-    for (size_t i = 0; i < answer.size(); ++i)
+/*    for (size_t i = 0; i < answer.size(); ++i)
     {
         std::cout << answer[i];
     }
-    std::cout << std::endl;
+    std::cout << std::endl;*/
 
     return 0;
 }
