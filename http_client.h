@@ -6,9 +6,6 @@
 #include <sstream>
 #include <array>
 #include <vector>
-#include <mutex>
-#include <condition_variable>
-
 
 #include <boost/asio.hpp>
 
@@ -32,10 +29,9 @@ public:
 private:
     int Connect();
     int SendData(const std::stringstream &message);
-    int ReadAnswer(std::vector<char> &answer);
-    void ReadAnswerAsync(std::vector<char> &answer);
+    int ReadAnswerAsync(std::vector<char> &answer);
     void OnRead(const boost::system::error_code& error, // Result of operation.
-                                std::size_t bytes_transferred);       // Number of bytes read.
+                std::size_t bytes_transferred);         // Buffer for answer
     void PrepareHeader();
 
 private:
@@ -46,9 +42,6 @@ private:
 
     char m_tmp_array[kReadBufferSize];
     std::vector<char> m_message;
-
-    std::mutex m_read_mutex;
-    std::condition_variable m_read_complite;
     bool m_read_end;
 };
 

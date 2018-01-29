@@ -48,12 +48,9 @@ int thingspeak_channel::UpdateChannelInfo(const ThingSpeakChannelStruct &data)
     std::vector<char> answer;
     m_http_client.SendMessage(head, answer);
 
-    // print result
-    for (size_t i = 0; i < answer.size(); ++i)
-    {
-        std::cout << answer[i];
-    }
-    std::cout << std::endl;
+    std::string str_output(answer.begin(), answer.end());
+
+    std::cout << str_output << std::endl;
 
     return 0;
 }
@@ -73,13 +70,6 @@ int thingspeak_channel::GetChennalData(std::vector<ThingSpeakChannelStruct> &las
     // send request
     std::vector<char> answer;
     m_http_client.SendMessage(head, answer);
-
-    // print result
-/*    for (size_t i = 0; i < answer.size(); ++i)
-    {
-        std::cout << answer[i];
-    }
-    std::cout << std::endl;*/
 
     return 0;
 }

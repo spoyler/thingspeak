@@ -23,11 +23,10 @@ int main()
 
     thing_speak::ThingSpeakChannelStruct data;
 
-    data.field[0] = 15;
+    data.field[0] = 16;
 
 
     channel.UpdateChannelInfo(data);
-
 
     if (!channel.GetChennalData(channel_data, 1))
     {
@@ -37,8 +36,6 @@ int main()
             std::cout << channel_data[0].entry_id << std::endl;
         }
     }
-
-
 
 	return 0;
 }
