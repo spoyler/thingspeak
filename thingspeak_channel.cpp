@@ -2,7 +2,12 @@
 
 #include <sstream>
 
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/json_parser.hpp>
+
 namespace thing_speak {
+
+void ParseAnswer(const std::vector<char> &answer);
 
 std::string random_sting()
 {
@@ -71,6 +76,8 @@ int thingspeak_channel::GetChennalData(std::vector<ThingSpeakChannelStruct> &las
     std::vector<char> answer;
     m_http_client.SendMessage(head, answer);
 
+    ParseAnswer(answer);
+
     return 0;
 }
 
@@ -83,4 +90,70 @@ std::stringstream &thingspeak_channel::AddDataToUpdateRequest(const std::string 
     return data;
 }
 
+void ParseAnswer(const std::vector<char> &answer)
+{
+    std::string string_answer(answer.begin(), answer.end());
+
+    const int header_size = string_answer.find("\r\n\r\n");
+
+    if (header_size)
+        string_answer = string_answer.substr(header_size + sizeof("\r\n\r\n") - 1);
+    else
+        return;
+
+    string_answer.erase(string_answer.find_last_of("}") + 1);
+    string_answer = string_answer.substr(string_answer.find('{'));
+
+    std::stringstream ttt(string_answer);
+
+    boost::property_tree::ptree pt;
+    boost::property_tree::read_json(ttt, pt);
+
+    for (const auto &array_element : pt)
+    {
+        if (array_element.first == "channel")
+        {
+            for (const auto &element : array_element.second)
+            {
+                std::cout << element.second.data();
+            }
+        }
+        //if()
+        for (const auto &element : array_element.second)
+        {
+            if (element.first == "feeds" )
+            {
+
+            }
+
+        }
+    }
+
 }
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
