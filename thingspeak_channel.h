@@ -12,7 +12,7 @@ struct ThingSpeakChannelStruct
   int channel_id;
   float field[8];
   std::string created_at;
-  int entry_id;
+  uint entry_id;
   float status;
   float latitude;
   float longitude;

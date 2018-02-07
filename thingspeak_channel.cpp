@@ -7,7 +7,7 @@
 
 namespace thing_speak {
 
-void ParseAnswer(const std::vector<char> &answer);
+void ParseAnswer(const std::vector<char> &answer, std::vector<ThingSpeakChannelStruct> &last_data);
 
 std::string random_sting()
 {
@@ -76,7 +76,7 @@ int thingspeak_channel::GetChennalData(std::vector<ThingSpeakChannelStruct> &las
     std::vector<char> answer;
     m_http_client.SendMessage(head, answer);
 
-    ParseAnswer(answer);
+    ParseAnswer(answer, last_data);
 
     return 0;
 }
@@ -90,7 +90,7 @@ std::stringstream &thingspeak_channel::AddDataToUpdateRequest(const std::string 
     return data;
 }
 
-void ParseAnswer(const std::vector<char> &answer)
+void ParseAnswer(const std::vector<char> &answer, std::vector<ThingSpeakChannelStruct> &last_data)
 {
     std::string string_answer(answer.begin(), answer.end());
 
@@ -104,28 +104,47 @@ void ParseAnswer(const std::vector<char> &answer)
     string_answer.erase(string_answer.find_last_of("}") + 1);
     string_answer = string_answer.substr(string_answer.find('{'));
 
-    std::stringstream ttt(string_answer);
+    std::stringstream ss(string_answer);
 
     boost::property_tree::ptree pt;
-    boost::property_tree::read_json(ttt, pt);
+    boost::property_tree::read_json(ss, pt);
 
     for (const auto &array_element : pt)
     {
+        // find channel info
         if (array_element.first == "channel")
         {
             for (const auto &element : array_element.second)
             {
-                std::cout << element.second.data();
+                std::cout << element.first.data() << ": " << element.second.data() << std::endl;
             }
         }
-        //if()
-        for (const auto &element : array_element.second)
+        // parse data array
+        if (array_element.first == "feeds")
         {
-            if (element.first == "feeds" )
+            // walk through all feeds
+            for (const auto &feeds : array_element.second)
             {
+                ThingSpeakChannelStruct data;
+                for(const auto &feed : feeds.second)
+                {
+                    if (feed.first == "entry_id")
+                    {
+                        data.entry_id = std::stol(feed.second.data());
+                    }
+                    if (feed.first.find("field") != std::string::npos)
+                    {
+                        uint field_id = std::stol(feed.first.substr(sizeof("field") - 1));
+                        if (field_id < 8)
+                        {
+                            data.field[field_id - 1] = std::stof(feed.second.data());
+                        }
+                        std::cout << feed.first.data() << ": " << feed.second.data() << std::endl;
+                    }
+                }
 
+                last_data.push_back(std::move(data));
             }
-
         }
     }
 
