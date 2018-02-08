@@ -10,13 +10,19 @@ namespace thing_speak {
 struct ThingSpeakChannelStruct
 {
   int channel_id;
-  float field[8];
-  std::string created_at;
-  uint entry_id;
-  float status;
+  std::string name;
+  std::string description;
   float latitude;
   float longitude;
   float elevation;
+  int last_entry_id;
+};
+
+struct ThingSpeakChannelFeed
+{
+    uint entry_id;
+    std::string created_at;
+    float field[8];
 };
 
 class thingspeak_channel
@@ -26,14 +32,15 @@ class thingspeak_channel
 public:
     thingspeak_channel(int channel_id, std::string read_key, std::string write_key);
 
-    int UpdateChannelInfo(const ThingSpeakChannelStruct &last_data);
-    int GetChennalData(std::vector<ThingSpeakChannelStruct> &last_data, int data_count);
+    int UpdateChannelInfo(const ThingSpeakChannelFeed &last_data);
+    int GetChennalData(int data_count, ThingSpeakChannelStruct &channel_info,
+                                        std::vector<ThingSpeakChannelFeed> &fields);
 
 private:
 
     std::stringstream& AddDataToUpdateRequest(const std::string &data_to_append,
-                           const std::string &data_name,
-                           std::stringstream &data);
+                                               const std::string &data_name,
+                                               std::stringstream &data);
 private:
     const int m_channel_id;
     const std::string m_read_key;

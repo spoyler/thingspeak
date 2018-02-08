@@ -19,21 +19,24 @@ int main()
 
     thing_speak::thingspeak_channel channel(channel_id, read_key, write_key);
 
-    std::vector<thing_speak::ThingSpeakChannelStruct> channel_data;
+    thing_speak::ThingSpeakChannelStruct channel_info;
+    std::vector<thing_speak::ThingSpeakChannelFeed> fields;
 
-    thing_speak::ThingSpeakChannelStruct data;
+    thing_speak::ThingSpeakChannelFeed data;
 
     data.field[0] = 16;
 
 
-    channel.UpdateChannelInfo(data);
+    //channel.UpdateChannelInfo(data);
 
-    if (!channel.GetChennalData(channel_data, 1))
+    if (!channel.GetChennalData(1, channel_info, fields))
     {
-        if(!channel_data.empty())
+        std::cout << channel_info.name << ":" << channel_info.description;
+
+        if(!fields.empty())
         {
-            std::cout << channel_data[0].created_at << std::endl;
-            std::cout << channel_data[0].entry_id << std::endl;
+            std::cout << fields[0].created_at << std::endl;
+            std::cout << fields[0].entry_id << std::endl;
         }
     }
 

@@ -7,7 +7,9 @@
 
 namespace thing_speak {
 
-void ParseAnswer(const std::vector<char> &answer, std::vector<ThingSpeakChannelStruct> &last_data);
+void ParseAnswer(const std::vector<char> &answer,
+                 ThingSpeakChannelStruct &channel_info,
+                 std::vector<ThingSpeakChannelFeed> &last_data);
 
 std::string random_sting()
 {
@@ -30,7 +32,7 @@ thingspeak_channel::thingspeak_channel(int channel_id, std::string read_key, std
 {
 }
 
-int thingspeak_channel::UpdateChannelInfo(const ThingSpeakChannelStruct &data)
+int thingspeak_channel::UpdateChannelInfo(const ThingSpeakChannelFeed &data)
 {
     std::stringstream head;
     head << "POST /update.json?";
@@ -60,8 +62,9 @@ int thingspeak_channel::UpdateChannelInfo(const ThingSpeakChannelStruct &data)
     return 0;
 }
 
-int thingspeak_channel::GetChennalData(std::vector<ThingSpeakChannelStruct> &last_data,
-                                       int data_count)
+int thingspeak_channel::GetChennalData(int data_count,
+        ThingSpeakChannelStruct &channel_info,
+        std::vector<ThingSpeakChannelFeed> &fields)
 {
     // create http_header
     std::stringstream head;
@@ -76,7 +79,7 @@ int thingspeak_channel::GetChennalData(std::vector<ThingSpeakChannelStruct> &las
     std::vector<char> answer;
     m_http_client.SendMessage(head, answer);
 
-    ParseAnswer(answer, last_data);
+    ParseAnswer(answer, channel_info, fields);
 
     return 0;
 }
@@ -90,7 +93,9 @@ std::stringstream &thingspeak_channel::AddDataToUpdateRequest(const std::string 
     return data;
 }
 
-void ParseAnswer(const std::vector<char> &answer, std::vector<ThingSpeakChannelStruct> &last_data)
+void ParseAnswer(const std::vector<char> &answer,
+                 ThingSpeakChannelStruct &channel_info,
+                 std::vector<ThingSpeakChannelFeed> &last_data)
 {
     std::string string_answer(answer.begin(), answer.end());
 
@@ -116,7 +121,20 @@ void ParseAnswer(const std::vector<char> &answer, std::vector<ThingSpeakChannelS
         {
             for (const auto &element : array_element.second)
             {
-                std::cout << element.first.data() << ": " << element.second.data() << std::endl;
+                if (element.first == "id")
+                    channel_info.channel_id = std::stoi(element.second.data());
+                if (element.first == "name")
+                    channel_info.name = element.second.data();
+                if (element.first == "description")
+                    channel_info.description = element.second.data();
+                if (element.first == "latitude")
+                    channel_info.latitude = std::stof(element.second.data());
+                if (element.first == "longitude")
+                    channel_info.longitude = std::stof(element.second.data());
+                if (element.first == "last_entry_id")
+                    channel_info.last_entry_id = std::stoi(element.second.data());
+
+                //std::cout << element.first.data() << ": " << element.second.data() << std::endl;
             }
         }
         // parse data array
@@ -125,7 +143,7 @@ void ParseAnswer(const std::vector<char> &answer, std::vector<ThingSpeakChannelS
             // walk through all feeds
             for (const auto &feeds : array_element.second)
             {
-                ThingSpeakChannelStruct data;
+                ThingSpeakChannelFeed data;
                 for(const auto &feed : feeds.second)
                 {
                     if (feed.first == "entry_id")
