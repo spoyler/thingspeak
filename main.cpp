@@ -31,7 +31,7 @@ int main()
 
     if (!channel.GetChennalData(1, channel_info, fields))
     {
-        std::cout << channel_info.name << ":" << channel_info.description;
+        std::cout << channel_info.name << ": " << channel_info.description << std::endl;
 
         if(!fields.empty())
         {

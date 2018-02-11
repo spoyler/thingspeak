@@ -2,6 +2,7 @@
 #define THINGSPEAK_CHANNEL_H
 
 #include <string>
+#include <map>
 
 #include "http_client.h"
 
@@ -41,12 +42,16 @@ private:
     std::stringstream& AddDataToUpdateRequest(const std::string &data_to_append,
                                                const std::string &data_name,
                                                std::stringstream &data);
+    void ParseAnswer(const std::vector<char> &answer,
+                     ThingSpeakChannelStruct &channel_info,
+                     std::vector<ThingSpeakChannelFeed> &last_data);
 private:
     const int m_channel_id;
     const std::string m_read_key;
     const std::string m_write_key;
     float m_field[kMaxChannelSize];
     http_client m_http_client;
+    std::map<std::string, int> m_channel_map;
 };
 
 }

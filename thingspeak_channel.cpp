@@ -7,9 +7,15 @@
 
 namespace thing_speak {
 
-void ParseAnswer(const std::vector<char> &answer,
-                 ThingSpeakChannelStruct &channel_info,
-                 std::vector<ThingSpeakChannelFeed> &last_data);
+enum CHANNEL_INFO {
+    CHANNEL_ID,
+    CHANNEL_NAME,
+    CHANNEL_DESCRIPTION,
+    CHANNEL_LATITUDE,
+    CHANNEL_LONGITUDE,
+    CHANNEL_LAST_ENTRY_ID
+};
+
 
 std::string random_sting()
 {
@@ -30,6 +36,12 @@ thingspeak_channel::thingspeak_channel(int channel_id, std::string read_key, std
     m_write_key(std::move(write_key)),
     m_http_client(kHostName)
 {
+    m_channel_map["id"] = CHANNEL_ID;
+    m_channel_map["name"] = CHANNEL_NAME;
+    m_channel_map["description"] = CHANNEL_DESCRIPTION;
+    m_channel_map["latitude"] = CHANNEL_LATITUDE;
+    m_channel_map["longitude"] = CHANNEL_LONGITUDE;
+    m_channel_map["last_entry_id"] = CHANNEL_LAST_ENTRY_ID;
 }
 
 int thingspeak_channel::UpdateChannelInfo(const ThingSpeakChannelFeed &data)
@@ -93,7 +105,7 @@ std::stringstream &thingspeak_channel::AddDataToUpdateRequest(const std::string 
     return data;
 }
 
-void ParseAnswer(const std::vector<char> &answer,
+void thingspeak_channel::ParseAnswer(const std::vector<char> &answer,
                  ThingSpeakChannelStruct &channel_info,
                  std::vector<ThingSpeakChannelFeed> &last_data)
 {
@@ -121,20 +133,34 @@ void ParseAnswer(const std::vector<char> &answer,
         {
             for (const auto &element : array_element.second)
             {
-                if (element.first == "id")
-                    channel_info.channel_id = std::stoi(element.second.data());
-                if (element.first == "name")
-                    channel_info.name = element.second.data();
-                if (element.first == "description")
-                    channel_info.description = element.second.data();
-                if (element.first == "latitude")
-                    channel_info.latitude = std::stof(element.second.data());
-                if (element.first == "longitude")
-                    channel_info.longitude = std::stof(element.second.data());
-                if (element.first == "last_entry_id")
-                    channel_info.last_entry_id = std::stoi(element.second.data());
+                const auto it = m_channel_map.find(element.first);
+                if (it == m_channel_map.end())
+                {
+                    //std::cout << element.first.data() << ": " << element.second.data() << std::endl;
+                    continue;
+                }
 
-                //std::cout << element.first.data() << ": " << element.second.data() << std::endl;
+                switch (it->second)
+                {
+                    case CHANNEL_ID:
+                        channel_info.channel_id = std::stoi(element.second.data());
+                        break;
+                    case CHANNEL_NAME:
+                        channel_info.name = element.second.data();
+                        break;
+                    case CHANNEL_DESCRIPTION:
+                        channel_info.description = element.second.data();
+                        break;
+                    case CHANNEL_LATITUDE:
+                        channel_info.latitude = std::stof(element.second.data());
+                        break;
+                    case CHANNEL_LONGITUDE:
+                        channel_info.longitude = std::stof(element.second.data());
+                        break;
+                    case CHANNEL_LAST_ENTRY_ID:
+                        channel_info.last_entry_id = std::stoi(element.second.data());
+                        break;
+                }
             }
         }
         // parse data array
@@ -149,6 +175,10 @@ void ParseAnswer(const std::vector<char> &answer,
                     if (feed.first == "entry_id")
                     {
                         data.entry_id = std::stol(feed.second.data());
+                    }
+                    if (feed.first == "created_at")
+                    {
+                        data.created_at = feed.second.data();
                     }
                     if (feed.first.find("field") != std::string::npos)
                     {
