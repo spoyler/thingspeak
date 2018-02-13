@@ -2,7 +2,7 @@ CXX=g++
 CXXFLAGS=-c -Wall -O0 -std=c++11 -g
 LDLIBS=-lboost_system -lpthread	
 
-SOURCES=main.cpp thingspeak_channel.cpp http_client.cpp
+SOURCES=$(shell find . -name *.cpp)
 OBJECTS=$(SOURCES:.cpp=.o)
 
 EXECUTABLE=thingspeak
@@ -17,4 +17,4 @@ $(EXECUTABLE):$(OBJECTS)
 	$(CXX) $(CXXFLAGS) $< -o $@
 
 clean:
-	rm -rf *.o main
+	find . -name *.o | xargs rm
