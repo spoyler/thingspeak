@@ -111,9 +111,9 @@ void thingspeak_channel::ParseAnswer(const std::vector<char> &answer,
 {
     std::string string_answer(answer.begin(), answer.end());
 
-    const int header_size = string_answer.find("\r\n\r\n");
+    const size_t header_size = string_answer.find("\r\n\r\n");
 
-    if (header_size)
+    if (header_size != std::string::npos)
         string_answer = string_answer.substr(header_size + sizeof("\r\n\r\n") - 1);
     else
         return;

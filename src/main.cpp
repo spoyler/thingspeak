@@ -24,7 +24,7 @@ int main()
 
     thing_speak::ThingSpeakChannelFeed data;
 
-    data.field[0] = 16;
+    data.field[0] = 55;
 
 
     channel.UpdateChannelInfo(data);
@@ -35,8 +35,9 @@ int main()
 
         if(!fields.empty())
         {
-            std::cout << fields[0].created_at << std::endl;
+            std::cout << fields[0].created_at << std::endl;            
             std::cout << fields[0].entry_id << std::endl;
+            std::cout << fields[0].field[0] << std::endl;
         }
     }
 

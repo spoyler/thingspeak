@@ -79,6 +79,7 @@ int http_client::ReadAnswerAsync(std::vector<char> &answer)
                                 std::placeholders::_1, std::placeholders::_2));
     m_read_end = false;
 
+    m_io_service.reset();
     m_io_service.run();
 
     answer = m_message;
@@ -105,6 +106,8 @@ void http_client::OnRead(const boost::system::error_code& error, // Result of op
         m_socket.shutdown(boost::asio::ip::tcp::socket::shutdown_receive);
         m_socket.close();
         m_read_end = true;
+
+        m_io_service.stop();
     }
 }
 
