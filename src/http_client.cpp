@@ -2,7 +2,6 @@
 
 #include <memory>
 #include <functional>
-#include <chrono>
 
 namespace thing_speak {
 
@@ -82,7 +81,7 @@ int http_client::ReadAnswerAsync(std::vector<char> &answer)
                                 std::placeholders::_1, std::placeholders::_2));
 
     // wait answer from server
-    const auto timeout = std::chrono::system_clock::now() + std::chrono::seconds(10);
+    const auto timeout = std::chrono::system_clock::now() + kReadTimeout;
     m_read_complete.wait_until(lock, timeout, [&] {return m_read_end;});
 
     //

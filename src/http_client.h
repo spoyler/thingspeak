@@ -2,6 +2,7 @@
 #define HTTP_CLIENT_H
 
 #include <array>
+#include <chrono>
 #include <condition_variable>
 #include <iostream>
 #include <mutex>
@@ -23,6 +24,7 @@ enum class HTTPMessageType : int
 class http_client
 {
     static const int kReadBufferSize = 1024;
+    const std::chrono::seconds kReadTimeout{5};		// timeout for reading http answer
 public:
     http_client(std::string host_name_or_ip_addr, boost::asio::io_service &io_service);
 
