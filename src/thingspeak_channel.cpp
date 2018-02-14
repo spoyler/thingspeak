@@ -30,11 +30,12 @@ std::string random_sting()
 }
 
 
-thingspeak_channel::thingspeak_channel(int channel_id, std::string read_key, std::string write_key) :
+thingspeak_channel::thingspeak_channel(int channel_id, std::string read_key,
+                                       std::string write_key, boost::asio::io_service &io_service) :
     m_channel_id(channel_id),
     m_read_key(std::move(read_key)),
     m_write_key(std::move(write_key)),
-    m_http_client(kHostName)
+    m_http_client(kHostName, io_service)
 {
     m_channel_map["id"] = CHANNEL_ID;
     m_channel_map["name"] = CHANNEL_NAME;

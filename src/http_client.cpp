@@ -2,13 +2,13 @@
 
 #include <memory>
 #include <functional>
-
+#include <chrono>
 
 namespace thing_speak {
 
-http_client::http_client(std::string host_name_or_ip_addr) :
+http_client::http_client(std::string host_name_or_ip_addr, boost::asio::io_service &io_service) :
     m_host_name_or_ip_addr(std::move(host_name_or_ip_addr)),
-    m_io_service(),
+    m_io_service(io_service),
     m_socket(m_io_service),
     m_resolver(m_io_service)
 {
@@ -73,15 +73,19 @@ int http_client::SendData(const std::stringstream &message)
 int http_client::ReadAnswerAsync(std::vector<char> &answer)
 {
     m_message.clear();
+    m_read_end = false;
+
+    std::unique_lock<std::mutex> lock(m_read_mutex);
 
     m_socket.async_read_some(boost::asio::buffer(m_tmp_array),
                              std::bind(&http_client::OnRead, this,
                                 std::placeholders::_1, std::placeholders::_2));
-    m_read_end = false;
 
-    m_io_service.reset();
-    m_io_service.run();
+    // wait answer from server
+    const auto timeout = std::chrono::system_clock::now() + std::chrono::seconds(10);
+    m_read_complete.wait_until(lock, timeout, [&] {return m_read_end;});
 
+    //
     answer = m_message;
 
     return m_read_end ? 0 : -1;
@@ -102,12 +106,12 @@ void http_client::OnRead(const boost::system::error_code& error, // Result of op
     }
     else
     {
+        std::lock_guard<std::mutex> lock(m_read_mutex);
         // close connection
         m_socket.shutdown(boost::asio::ip::tcp::socket::shutdown_receive);
         m_socket.close();
         m_read_end = true;
-
-        m_io_service.stop();
+        m_read_complete.notify_one();
     }
 }
 

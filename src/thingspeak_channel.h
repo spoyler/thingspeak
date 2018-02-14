@@ -31,7 +31,8 @@ class thingspeak_channel
     static const int kMaxChannelSize = 8;
     const std::string kHostName = "api.thingspeak.com";
 public:
-    thingspeak_channel(int channel_id, std::string read_key, std::string write_key);
+    thingspeak_channel(int channel_id, std::string read_key,
+                       std::string write_key, boost::asio::io_service &io_service);
 
     int UpdateChannelInfo(const ThingSpeakChannelFeed &last_data);
     int GetChennalData(int data_count, ThingSpeakChannelStruct &channel_info,

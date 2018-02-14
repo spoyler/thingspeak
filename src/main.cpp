@@ -5,8 +5,8 @@
 
 #include <boost/asio.hpp>
 
+#include "tcpcontext.h"
 #include "thingspeak_channel.h"
-
 
 
 int main()
@@ -15,16 +15,19 @@ int main()
     const std::string read_key = "QCB8ZKKZEJBK7W6V";
     const std::string write_key = "IMONY3UPBVR3AEO2";
 
-    std::cout << read_key << std::endl;
+    TCPContext tcp_context;
+    tcp_context.Start();
 
-    thing_speak::thingspeak_channel channel(channel_id, read_key, write_key);
+
+    thing_speak::thingspeak_channel channel(channel_id, read_key,
+                                            write_key, tcp_context.IOService());
 
     thing_speak::ThingSpeakChannelStruct channel_info;
     std::vector<thing_speak::ThingSpeakChannelFeed> fields;
 
     thing_speak::ThingSpeakChannelFeed data;
 
-    data.field[0] = 55;
+    data.field[0] = 56;
 
 
     channel.UpdateChannelInfo(data);
@@ -40,6 +43,8 @@ int main()
             std::cout << fields[0].field[0] << std::endl;
         }
     }
+
+    tcp_context.Stop();
 
 	return 0;
 }

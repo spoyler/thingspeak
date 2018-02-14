@@ -1,10 +1,12 @@
 #ifndef HTTP_CLIENT_H
 #define HTTP_CLIENT_H
 
-#include <string>
-#include <iostream>
-#include <sstream>
 #include <array>
+#include <condition_variable>
+#include <iostream>
+#include <mutex>
+#include <sstream>
+#include <string>
 #include <vector>
 
 #include <boost/asio.hpp>
@@ -22,7 +24,7 @@ class http_client
 {
     static const int kReadBufferSize = 1024;
 public:
-    http_client(std::string host_name_or_ip_addr);
+    http_client(std::string host_name_or_ip_addr, boost::asio::io_service &io_service);
 
     int SendMessage(const std::stringstream &message, std::vector<char> &answer);
 
@@ -36,12 +38,14 @@ private:
 
 private:
     const std::string m_host_name_or_ip_addr;
-    boost::asio::io_service m_io_service;
+    boost::asio::io_service &m_io_service;
     boost::asio::ip::tcp::socket m_socket;
     boost::asio::ip::tcp::resolver m_resolver;
 
     char m_tmp_array[kReadBufferSize];
     std::vector<char> m_message;
+    std::mutex m_read_mutex;
+    std::condition_variable m_read_complete;
     bool m_read_end;
 };
 
