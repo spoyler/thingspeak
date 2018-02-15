@@ -16,6 +16,7 @@ http_client::http_client(std::string host_name_or_ip_addr, boost::asio::io_servi
 
 int http_client::SendMessage(const std::stringstream &message, std::vector<char> &answer)
 {
+    std::lock_guard<std::mutex> lock(m_send_message_mutex);
     if (!Connect())
     {
         if (!SendData(message))

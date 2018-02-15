@@ -49,6 +49,7 @@ private:
     std::mutex m_read_mutex;
     std::condition_variable m_read_complete;
     bool m_read_end;
+    std::mutex m_send_message_mutex;
 };
 
 }
