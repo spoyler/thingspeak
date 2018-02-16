@@ -1,6 +1,5 @@
 #include <iostream>
 #include <string>
-#include <random>
 #include <vector>
 
 #include <boost/asio.hpp>
@@ -17,6 +16,8 @@ struct BaseProgramParamester
     boost::optional<std::string> write_key;
 };
 
+static const char *kBaseConfigFilename = "config.cfg";
+
 bool ParseCMDOptions(int argc, const char *argv[], BaseProgramParamester &params);
 
 int main(int argc, const char *argv[])
@@ -27,12 +28,9 @@ int main(int argc, const char *argv[])
         return 1;
 
     if (!params.channel_id || !params.read_key || !params.write_key)
+    {
         return 1;
-
-//    const int channel_id = 337028;
-//    const std::string read_key = "QCB8ZKKZEJBK7W6V";
-//    const std::string write_key = "IMONY3UPBVR3AEO2";
-
+    }
 
     TCPContext tcp_context;
     tcp_context.Start();
@@ -70,39 +68,76 @@ int main(int argc, const char *argv[])
 
 bool ParseCMDOptions(int argc, const char *argv[], BaseProgramParamester &params)
 {
+
     namespace po = boost::program_options;
+
+    // params for cmd
     po::options_description cmd_description;
     cmd_description.add_options()
         ("help", "print all available options")
+        ("cfg_file", po::value<std::string>()->default_value(kBaseConfigFilename), "put here you file name config");
+
+    // params for config file
+    po::options_description config_file_description;
+    config_file_description.add_options()
         ("id_channel", po::value<int>()->required(), "number of connecting chanel")
         ("read_key", po::value<std::string>()->required(), "You read key for the channel")
         ("write_key",po::value<std::string>()->required(), "You write key for the channel");
 
-    po::variables_map cmd_options;
-    po::store(po::parse_command_line(argc, argv, cmd_description), cmd_options);
-    po::notify(cmd_options);
 
-    if (cmd_options.count("help"))
+    // read file name from cmd line
+    po::variables_map cmd_params;
+    try {
+        po::store(po::parse_command_line(argc, argv, cmd_description), cmd_params);
+        po::notify(cmd_params);
+    }
+    catch(std::exception const &ex)
+    {
+        std::cerr << "Error, invalid cmd params: "  << ex.what() << std::endl;
+        return false;
+    }
+    
+    // print help for users
+    if (cmd_params.count("help"))
     {
         std::cout << cmd_description << std::endl;
         return false;
     }
 
-    for (const auto option : cmd_options)
+    // read file name from params
+    std::string file_name;
+    if (cmd_params.count("cfg_file"))
     {
-        if (option.first == "id_channel")
+        file_name = cmd_params["cfg_file"].as<std::string>();
+    }
+
+    // read channel config form config file
+    po::variables_map config_params;
+    try {
+        po::store(po::parse_config_file<char>(file_name.c_str(), config_file_description), config_params);
+        po::notify(config_params);
+    }
+    catch(std::exception const &ex)
+    {
+        std::cerr << "Error reading confing file :" << ex.what() << std::endl;
+        return false;
+    }
+
+    for (const auto param : config_params)
+    {
+        if (param.first == "id_channel")
         {
-            params.channel_id = option.second.as<int>();
+            params.channel_id = param.second.as<int>();
             continue;
         }
-        if (option.first == "read_key")
+        if (param.first == "read_key")
         {
-            params.read_key = option.second.as<std::string>();
+            params.read_key = param.second.as<std::string>();
             continue;
         }
-        if (option.first == "write_key")
+        if (param.first == "write_key")
         {
-            params.write_key = option.second.as<std::string>();
+            params.write_key = param.second.as<std::string>();
             continue;
         }
     }
