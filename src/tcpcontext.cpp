@@ -24,3 +24,8 @@ void TCPContext::Stop()
     m_worker.join();
 }
 
+TCPContext::~TCPContext()
+{
+    Stop();
+}
+

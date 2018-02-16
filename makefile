@@ -1,6 +1,6 @@
 CXX=g++
 CXXFLAGS=-c -Wall -O0 -std=c++11 -g
-LDLIBS=-lboost_system -lpthread	
+LDLIBS=-lboost_system -lboost_program_options -lpthread	
 
 SOURCES=$(shell find . -name *.cpp)
 OBJECTS=$(SOURCES:.cpp=.o)

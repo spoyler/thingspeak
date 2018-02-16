@@ -15,6 +15,8 @@ public:
     void Start();
     void Stop();
 
+    ~TCPContext();
+
 private:
     boost::asio::io_service m_io_service;
     boost::optional<boost::asio::io_service::work> m_work;
