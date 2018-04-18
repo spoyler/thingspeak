@@ -17,17 +17,6 @@ enum CHANNEL_INFO {
 };
 
 
-std::string random_sting()
-{
-    std::string base_sting("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz");
-
-    std::random_device rd;
-    std::mt19937 generator(rd());
-
-    std::shuffle(base_sting.begin(), base_sting.end(), generator);
-
-    return base_sting.substr(0, 32);
-}
 
 
 thingspeak_channel::thingspeak_channel(int channel_id, std::string read_key,

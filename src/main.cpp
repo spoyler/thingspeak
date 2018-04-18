@@ -9,6 +9,8 @@
 #include "tcpcontext.h"
 #include "thingspeak_channel.h"
 
+#include "pi_dht_read.h"
+
 struct BaseProgramParamester
 {
     boost::optional<int> channel_id;
@@ -44,21 +46,14 @@ int main(int argc, const char *argv[])
 
     thing_speak::ThingSpeakChannelFeed data;
 
-    data.field[0] = 56;
-
-
-    channel.UpdateChannelInfo(data);
-
-    if (!channel.GetChennalData(1, channel_info, fields))
+    while (1)
     {
-        std::cout << channel_info.name << ": " << channel_info.description << std::endl;
-
-        if(!fields.empty())
-        {
-            std::cout << fields[0].created_at << std::endl;            
-            std::cout << fields[0].entry_id << std::endl;
-            std::cout << fields[0].field[0] << std::endl;
-        }
+	if (pi_dht_read(DHT11, 4, &data.field[0], &data.field[1]) == DHT_SUCCESS)
+	{
+		std::cout << data.field[1] << " " << data.field[0] << std::endl;
+		channel.UpdateChannelInfo(data);
+		break;
+	}
     }
 
     tcp_context.Stop();
