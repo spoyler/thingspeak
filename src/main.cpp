@@ -1,6 +1,11 @@
+#include <chrono>
+#include <condition_variable>
+#include <deque>
 #include <iostream>
+#include <mutex>
 #include <string>
 #include <vector>
+#include <thread>
 
 #include <boost/asio.hpp>
 #include <boost/optional.hpp>
@@ -22,6 +27,37 @@ static const char *kBaseConfigFilename = "config.cfg";
 
 bool ParseCMDOptions(int argc, const char *argv[], BaseProgramParamester &params);
 
+
+std::deque<thing_speak::ThingSpeakChannelFeed> sensor_queue;
+std::mutex lock_queue;
+std::condition_variable wait_queue;
+
+void ReadDataFromSensor(std::chrono::seconds sleep_time)
+{
+	while(1)
+	{
+		thing_speak::ThingSpeakChannelFeed data;
+
+		while(1)
+		{
+
+			if (pi_dht_read(DHT11, 4, &data.field[1], &data.field[0]) == DHT_SUCCESS)
+			{
+				std::cout << "temperature" << data.field[0] << std::endl;
+				std::cout << "humidity " << data.field[1] << std::endl;
+                {
+                    std::lock_guard<std::mutex> lock(lock_queue);
+                    sensor_queue.push_back(std::move(data));
+                    wait_queue.notify_all();
+                }
+				std::this_thread::sleep_for(sleep_time);              
+				break;
+			}
+		}
+	}
+}
+
+
 int main(int argc, const char *argv[])
 {
 
@@ -41,19 +77,19 @@ int main(int argc, const char *argv[])
     thing_speak::thingspeak_channel channel(*params.channel_id, *params.read_key,
                                             *params.write_key, tcp_context.IOService());
 
-    thing_speak::ThingSpeakChannelStruct channel_info;
-    std::vector<thing_speak::ThingSpeakChannelFeed> fields;
-
-    thing_speak::ThingSpeakChannelFeed data;
+    std::thread read_data_from_sensor(ReadDataFromSensor, std::chrono::seconds(60));
 
     while (1)
     {
-	if (pi_dht_read(DHT11, 4, &data.field[0], &data.field[1]) == DHT_SUCCESS)
-	{
-		std::cout << data.field[1] << " " << data.field[0] << std::endl;
-		channel.UpdateChannelInfo(data);
-		break;
-	}
+        std::unique_lock<std::mutex> lock(lock_queue);
+        wait_queue.wait(lock, [](){return !sensor_queue.empty();});
+
+        if (!sensor_queue.empty())
+        {
+            auto data = sensor_queue.front();
+            sensor_queue.pop_front();
+            channel.UpdateChannelInfo(data);
+        }
     }
 
     tcp_context.Stop();

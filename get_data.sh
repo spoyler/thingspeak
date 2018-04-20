@@ -1,5 +1,6 @@
+#!/bin/sh
 while true;
-do ./thighspeak.out;
+do ./thingspeak.out;
 	sleep 60;
 done
 
